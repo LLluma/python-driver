@@ -3584,8 +3584,13 @@ class ResponseFuture(object):
                     else:
                         self._set_final_exception(response)
                     return
-
-                retry_type, consistency = retry
+                try:
+                    retry_type, consistency = retry
+                except TypeError:
+                    print >> sys.stderr, "WARNING: Cassandra catched exit code", retry
+                    print >> sys.stderr, "WARNING: Policy -->", retry_policy
+                    print >> sys.stderr, "WARNING: response -->", response
+                    raise ConnectionException("Catched exit code %d" % retry)
                 if retry_type in (RetryPolicy.RETRY, RetryPolicy.RETRY_NEXT_HOST):
                     self._query_retries += 1
                     reuse = retry_type == RetryPolicy.RETRY
